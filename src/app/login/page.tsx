@@ -1,0 +1,60 @@
+import Image from "next/image";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { LoginForm } from "@/components/auth/login-form";
+import { SupabaseSetupPanel } from "@/components/auth/supabase-setup-panel";
+
+export default async function LoginPage() {
+  const configured = isSupabaseConfigured();
+
+  if (configured) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      redirect("/dashboard");
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-background text-white">
+      <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="flex items-center px-6 py-10 md:px-12">
+          <div className="mx-auto w-full max-w-md">
+            <div className="mb-10 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-md border border-accent/30 bg-[rgba(206,103,54,0.16)] p-1.5">
+                <Image src="/aphelio-logo.png" alt="Aphelio Lab" width={32} height={32} className="h-8 w-8 object-contain" />
+              </div>
+              <div>
+                <p className="font-semibold">Aphelio Performance Hub</p>
+                <p className="text-sm text-muted">Aphelio Lab</p>
+              </div>
+            </div>
+
+            {configured ? <LoginForm /> : <SupabaseSetupPanel />}
+          </div>
+        </section>
+
+        <section className="relative hidden overflow-hidden lg:block">
+          <Image
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80"
+            alt="Painel analitico em uma operacao de dados"
+            fill
+            sizes="55vw"
+            className="object-cover opacity-45"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/35 to-transparent" />
+          <div className="absolute bottom-10 left-10 right-10 glass-panel rounded-lg p-6">
+            <p className="text-sm uppercase tracking-[0.22em] text-accent">Operacao premium</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight">Financeiro, clientes e CRM no mesmo cockpit.</h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-muted">Dados consistentes, leitura executiva e uma base visual preparada para futuras integracoes.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
